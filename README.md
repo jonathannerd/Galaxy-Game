@@ -1,0 +1,1 @@
+My Galaxy game is a space themed arcade game where you pilot a ship through an open arena, dodging obstacles and enemies while firing to survive and score points. It features smooth movement controls, projectile based combat, and increasing difficulty as the game progresses.
