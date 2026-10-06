@@ -483,10 +483,10 @@ void boss() {
     }
   }
   if (bossHealth <= 0) {
+    bossSound.stop();
     song.play();
     bossHealth = 500;
-    bossSound.stop();
-    sound=0;
+    sound=1;
     score = 60;
     numRocks = 8;
     bos1.x = -600;
@@ -494,10 +494,10 @@ void boss() {
   }
   if (bossHealth1 <= 0) {
     bossHealth1 = 1000;
+    bossSound.stop();
     song.play();
     rocks.clear();
-    bossSound.stop();
-    sound=0;
+    sound=1;
     score = 110;
     numRocks = 10;
     bos2.x = -600;
@@ -671,8 +671,9 @@ void died() {
   game = false;
   died = true;
   bossSound.stop();
+  finalBoss.stop();
   song.stop();
-  if (sound==1)dead.play();
+  if (sound!=0)dead.play();
   sound=0;
   fill(255);
   textSize(200);
