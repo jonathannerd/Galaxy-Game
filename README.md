@@ -45,16 +45,6 @@ Regular meteors award points and become tougher over time. Bosses appear at scor
 
 The sketch expects every image and audio file to remain in `Galaxy_Game/data/`.
 
-## Regression checks
-
-With Python 3 and a Java 17+ JDK installed, run:
-
-```sh
-python3 -m unittest discover -s tests -v
-```
-
-These checks compile and execute the sketch with headless drawing and audio test doubles. They cover music transitions through menus, all three bosses, victory, death, and replay, plus boss health and projectile cleanup. Listening to the real soundtrack still requires running the game in Processing.
-
 ## Built with
 
 - Processing
