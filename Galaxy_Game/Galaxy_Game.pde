@@ -17,8 +17,8 @@ AudioSample playerShot;
 //coordinent of ship
 PVector ship, bos1, bos2, bos3;
 
-//int for sound
-int sound;
+//currently playing background music
+AudioSample currentMusic;
 
 //booleans for controls
 boolean w, a, s, d, up, down, left, right, space, leftRotate, rightRotate;
@@ -132,6 +132,27 @@ void draw() {
     if (shooting == true)shoot();
   }
   if (healthPoints < 1)died();
+  updateMusic();
+}
+//Keep one background track playing, changing it only when the game state changes.
+void updateMusic() {
+  AudioSample nextMusic = null;
+  if (died) {
+    nextMusic = dead;
+  } else if (game) {
+    if (score == 50 || score == 100) nextMusic = bossSound;
+    else if (score == 150) nextMusic = finalBoss;
+    else nextMusic = song;
+  } else if (shop) {
+    nextMusic = shopSound;
+  } else if (menu || options) {
+    nextMusic = menuSound;
+  }
+
+  if (nextMusic == currentMusic) return;
+  if (currentMusic != null) currentMusic.stop();
+  currentMusic = nextMusic;
+  if (currentMusic != null) currentMusic.loop();
 }
 //background
 void backgroundImage() {
@@ -143,8 +164,6 @@ void backgroundImage() {
 }
 //menu
 void menu() {
-  if (sound==0)menuSound.play();
-  sound=1;
   image(BG, width/2, height/2);
   fill(255, 60);
   stroke(255, 50);
@@ -172,8 +191,6 @@ void menu() {
     if (mousePressed) {
       if (mouseX >= width/2.8 && mouseX <= width/2.8 + 600 && mouseY >= height/2.2 && mouseY <= height/2.2 + 100) {
         game = true;
-        menuSound.stop();
-        sound=0;
         menu = false;
       }
       if (mouseX <= width && mouseX >= width - 100 && mouseY >= 0 && mouseY <= 40&& game == false) {
@@ -183,8 +200,6 @@ void menu() {
         options = true;
       }
       if (mouseX >= width/2.39 && mouseX <= width/2.39 + 600 && mouseY <= height/1.4 && mouseY >= height/1.4 - 100) {
-        menuSound.stop();
-        sound=0;
         shop = true;
       }
     }
@@ -223,8 +238,6 @@ void options() {
 }
 //shop
 void shop() {
-  if (sound==0)shopSound.play();
-  sound=1;
   menu=false;
   fill(255);
   textSize(200);
@@ -275,8 +288,6 @@ void shop() {
   text("Back", 10, 35);
   if (mousePressed) {
     if (mouseX >= 0 && mouseX <= 50 && mouseY <= 50 && mouseY >= 0) {
-      shopSound.stop();
-      sound=0;
       shop = false;
       menu=true;
       if (unlocked == color(255, 0, 0))unlocked = color(255);
@@ -312,11 +323,6 @@ void shop() {
   }
 }
 void redraw() {
-  if (sound==0&&score==0) {
-    song.play();
-    sound = 1;
-    bossSound.stop();
-  }
   for (int i = explosions.size() - 1; i >= 0; i--) {
     Explosion explosion = explosions.get(i);
     explosion.update(3);
@@ -418,12 +424,6 @@ void boss() {
     image(boss1, 0, 0, 300, 300);
     if (bos1.y < 200) bos1.y += 2;
     else bos1.x = lerp(ship.x, bos1.x, .97);
-    song.stop();
-    if (sound==1) {
-      song.stop();
-      bossSound.play();
-      sound=2;
-    }
   }
   popMatrix();
   pushMatrix();
@@ -437,12 +437,6 @@ void boss() {
     image(boss2, 0, 0, 300, 300);
     if (bos2.y < 200)bos2.y += 2;
     else bos2.x = lerp(ship.x, bos2.x, .97);
-    song.stop();
-    if (sound==1) {
-      song.stop();
-      bossSound.play();
-      sound=2;
-    }
   }
   popMatrix();
   pushMatrix();
@@ -453,12 +447,6 @@ void boss() {
     image(boss3, 0, 0, 300, 300);
     if (bos3.y < 200)bos3.y += 2;
     else bos3.x = lerp(ship.x, bos3.x, .97);
-    song.stop();
-    if (sound==1) {
-      song.stop();
-      finalBoss.play();
-      sound=2;
-    }
   }
   popMatrix();
   if ((score == 50) && bos1.y == 200) {
@@ -483,28 +471,25 @@ void boss() {
     }
   }
   if (bossHealth <= 0) {
-    song.play();
     bossHealth = 500;
-    bossSound.stop();
-    sound=0;
     score = 60;
     numRocks = 8;
     bos1.x = -600;
+    bossShots.clear();
+    bossShotCooldownCounter = 0;
     spawn();
   }
   if (bossHealth1 <= 0) {
     bossHealth1 = 1000;
-    song.play();
     rocks.clear();
-    bossSound.stop();
-    sound=0;
     score = 110;
     numRocks = 10;
     bos2.x = -600;
+    bossShots.clear();
+    bossShotCooldownCounter = 0;
     spawn();
   }
   if (bossHealth3 <= 0) {
-    finalBoss.stop();
     menu = false;
     game = false;
     rocks.clear();
@@ -514,7 +499,6 @@ void boss() {
   }
 }
 void winningScreen() {
-  finalBoss.stop();
   background(0);
 }
 void updateBossShots() {
@@ -670,10 +654,6 @@ void died() {
   image(BG, width/2, height/2);
   game = false;
   died = true;
-  bossSound.stop();
-  song.stop();
-  if (sound==1)dead.play();
-  sound=0;
   fill(255);
   textSize(200);
   text("You Died", width/3.2, height/4.7);
@@ -688,8 +668,6 @@ void died() {
       exit();
     }
     if (mouseX >= width/2.6 && mouseX <= width/2.6 + 230 && mouseY <= height/1.87 && mouseY >= height/1.87 - 100) {
-      sound=0;
-      dead.stop();
       hitPoints = 1;
       finalScore += score;
       score = 0;
@@ -700,6 +678,11 @@ void died() {
       heart4=30;
       heart5=30;
       rocks.clear();
+      bossHealth = 500;
+      bossHealth1 = 1000;
+      bossHealth3 = 5000;
+      bossShotCooldownCounter = 0;
+      shotCooldownCounter = 0;
       bos1.y = -300;
       bos2.y = -300;
       bos3.y = -300;
@@ -716,8 +699,6 @@ void died() {
       ship.y=height/2;
     }
     if (mouseX >= width/2.6 && mouseX <= width/2.6 + 230 && mouseY <= height/1.4 && mouseY >= height/1.4 - 100) {
-      sound=0;
-      dead.stop();
       hitPoints = 1;
       finalScore += score;
       score = 0;
@@ -730,6 +711,9 @@ void died() {
       rocks.clear();
       bossHealth = 500;
       bossHealth1 = 1000;
+      bossHealth3 = 5000;
+      bossShotCooldownCounter = 0;
+      shotCooldownCounter = 0;
       bos1.y = -300;
       bos2.y = -300;
       bos3.y = -300;
